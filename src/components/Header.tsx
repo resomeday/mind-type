@@ -104,6 +104,15 @@ export const Header: React.FC<HeaderProps> = ({
             <Users className="w-3.5 h-3.5" />
             <span>친구 케미</span>
           </button>
+          <button
+            type="button"
+            onClick={onOpenInstallModal}
+            className="whitespace-nowrap transition-colors flex items-center gap-1.5 cursor-pointer py-1 hover:text-stone-900 text-stone-600 font-medium"
+            title="스마트폰에 앱 설치"
+          >
+            <Smartphone className="w-3.5 h-3.5 text-stone-700" />
+            <span>앱 설치</span>
+          </button>
         </nav>
 
         {/* Zone 3: Actions */}
@@ -143,11 +152,11 @@ export const Header: React.FC<HeaderProps> = ({
           {/* App Install button */}
           <button
             onClick={onOpenInstallModal}
-            className="px-2.5 py-1.5 text-xs font-medium text-stone-700 hover:text-stone-900 hover:bg-stone-100/80 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer border border-stone-200/80"
+            className="px-2.5 py-1.5 text-xs font-bold text-stone-900 bg-amber-50 hover:bg-amber-100/90 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer border border-amber-200/90 shadow-2xs active:scale-98"
             title="스마트폰 홈 화면에 앱 설치 및 출시 가이드"
           >
-            <Smartphone className="w-3.5 h-3.5 text-stone-600" />
-            <span className="hidden sm:inline">앱 설치</span>
+            <Smartphone className="w-3.5 h-3.5 text-amber-700" />
+            <span>앱 설치</span>
           </button>
 
           {/* Test / Setting primary button */}
@@ -161,8 +170,8 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
       </div>
 
-      {/* Mobile sub navigation bar */}
-      <div className="flex md:hidden border-t border-stone-100 bg-stone-50/90 px-1 py-1 justify-around text-xs">
+      {/* Mobile sub navigation bar with App Install included */}
+      <div className="flex md:hidden border-t border-stone-100 bg-stone-50/90 px-1 py-1 justify-around text-xs overflow-x-auto">
         <button
           onClick={() => setCurrentTab('tests')}
           className={`py-1.5 px-2 rounded-lg font-medium flex items-center gap-1 transition-all ${
@@ -207,6 +216,15 @@ export const Header: React.FC<HeaderProps> = ({
         >
           <Users className="w-3.5 h-3.5" />
           <span>친구</span>
+        </button>
+        <button
+          type="button"
+          onClick={onOpenInstallModal}
+          className="py-1.5 px-2 rounded-lg font-bold flex items-center gap-1 transition-all text-amber-800 bg-amber-100/70 border border-amber-200/60 shadow-2xs cursor-pointer"
+          title="스마트폰에 앱 설치"
+        >
+          <Smartphone className="w-3.5 h-3.5 text-amber-700" />
+          <span>앱 설치</span>
         </button>
       </div>
     </header>

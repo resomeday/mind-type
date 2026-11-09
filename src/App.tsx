@@ -473,7 +473,14 @@ export default function App() {
             <span aria-hidden="true" className="text-stone-300">·</span>
             <span className="text-stone-600">6차원 다면 성격 분석 & 인간관계 추천 플랫폼</span>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              onClick={() => setIsInstallModalOpen(true)}
+              className="text-stone-800 hover:text-stone-950 font-bold flex items-center gap-1 cursor-pointer text-xs bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-200/80 shadow-2xs"
+            >
+              <span>📱 스마트폰 앱 설치</span>
+            </button>
+            <span aria-hidden="true" className="text-stone-300">·</span>
             <button
               onClick={() => setIsPdfModalOpen(true)}
               className="text-stone-700 hover:text-stone-950 underline font-semibold flex items-center gap-1 cursor-pointer text-xs"
