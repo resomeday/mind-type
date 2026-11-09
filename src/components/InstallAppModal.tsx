@@ -20,6 +20,11 @@ import {
 } from 'lucide-react';
 import { usePWAInstall } from '../hooks/usePWAInstall';
 
+import { 
+  downloadAppleWebClipProfile, 
+  installAndroidDirect 
+} from '../services/mobileInstallService';
+
 interface InstallAppModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -31,16 +36,17 @@ export const InstallAppModal: React.FC<InstallAppModalProps> = ({ isOpen, onClos
   const { isInstallable, isInstalled, isIOS, isAndroid, platformName, triggerInstall } = usePWAInstall();
   
   // Default tab based on user's device
-  const [activeTab, setActiveTab] = useState<TabKey>(() => {
-    if (isIOS) return 'instant_pwa';
-    if (isAndroid) return 'instant_pwa';
-    return 'instant_pwa';
-  });
+  const [activeTab, setActiveTab] = useState<TabKey>('instant_pwa');
 
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const [installStatus, setInstallStatus] = useState<string | null>(null);
+  const [activePlatformFeedback, setActivePlatformFeedback] = useState<'android' | 'apple' | null>(null);
 
   if (!isOpen) return null;
+
+  const currentAppUrl = typeof window !== 'undefined' && window.location.origin.startsWith('http')
+    ? window.location.origin
+    : 'https://ais-pre-g5rc6dgojhiu7nte2qwhf7-633738735601.asia-east1.run.app';
 
   const handleCopy = (text: string, id: string) => {
     navigator.clipboard.writeText(text);
@@ -48,20 +54,17 @@ export const InstallAppModal: React.FC<InstallAppModalProps> = ({ isOpen, onClos
     setTimeout(() => setCopiedCode(null), 2000);
   };
 
-  const handleAndroidInstallClick = async () => {
-    const outcome = await triggerInstall();
-    if (outcome === 'accepted') {
-      setInstallStatus('앱 설치가 수락되었습니다! 홈 화면을 확인해주세요.');
-    } else if (outcome === 'dismissed') {
-      setInstallStatus('설치가 취소되었습니다. 언제든 다시 시도하실 수 있습니다.');
-    } else {
-      setInstallStatus('브라우저 우측 상단 메뉴(⋮)에서 [홈 화면에 추가] 또는 [앱 설치]를 눌러주세요.');
-    }
+  const handleDirectAndroidClick = async () => {
+    setActivePlatformFeedback('android');
+    const msg = await installAndroidDirect(triggerInstall, currentAppUrl);
+    setInstallStatus(msg);
   };
 
-  const currentAppUrl = typeof window !== 'undefined' && window.location.origin.startsWith('http')
-    ? window.location.origin
-    : 'https://ais-pre-g5rc6dgojhiu7nte2qwhf7-633738735601.asia-east1.run.app';
+  const handleDirectAppleClick = () => {
+    setActivePlatformFeedback('apple');
+    const msg = downloadAppleWebClipProfile(currentAppUrl);
+    setInstallStatus(msg);
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/70 backdrop-blur-sm animate-in fade-in duration-200">
@@ -160,6 +163,78 @@ export const InstallAppModal: React.FC<InstallAppModalProps> = ({ isOpen, onClos
           {/* TAB 1: INSTANT PWA INSTALL */}
           {activeTab === 'instant_pwa' && (
             <div className="space-y-4">
+              {/* TWO DIRECT ONE-CLICK INSTALL BUTTONS */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                {/* 1. Android Direct Install Card */}
+                <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-emerald-500/10 via-emerald-500/5 to-teal-500/10 border-2 border-emerald-500/30 flex flex-col justify-between shadow-xs">
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold">
+                          <Smartphone className="w-4 h-4" />
+                        </div>
+                        <span className="font-extrabold text-sm text-stone-900">안드로이드 (갤럭시)</span>
+                      </div>
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
+                        1초 즉시 설치
+                      </span>
+                    </div>
+                    <p className="text-xs text-stone-600 leading-relaxed">
+                      구글 크롬 / 삼성 인터넷 브라우저에서 홈 화면 바로가기 및 독립형 앱으로 즉시 설치됩니다.
+                    </p>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={handleDirectAndroidClick}
+                    className="mt-3.5 w-full py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md shadow-emerald-600/20 transition cursor-pointer"
+                  >
+                    <Download className="w-4 h-4" />
+                    <span>안드로이드 바로 설치하기</span>
+                  </button>
+                </div>
+
+                {/* 2. Apple Direct Install Card */}
+                <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-stone-900/10 via-stone-800/5 to-slate-900/10 border-2 border-stone-800/30 flex flex-col justify-between shadow-xs">
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 rounded-xl bg-stone-900 text-white flex items-center justify-center font-bold">
+                          <Apple className="w-4 h-4" />
+                        </div>
+                        <span className="font-extrabold text-sm text-stone-900">Apple (아이폰/아이패드)</span>
+                      </div>
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-stone-100 text-stone-800">
+                        원클릭 프로파일
+                      </span>
+                    </div>
+                    <p className="text-xs text-stone-600 leading-relaxed">
+                      클릭 즉시 아이폰 설치 프로파일(.mobileconfig)이 생성되며, 홈 화면에 실제 앱 아이콘이 추가됩니다.
+                    </p>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={handleDirectAppleClick}
+                    className="mt-3.5 w-full py-3 px-4 rounded-xl bg-stone-900 hover:bg-stone-800 active:scale-[0.98] text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md shadow-stone-900/20 transition cursor-pointer"
+                  >
+                    <Download className="w-4 h-4" />
+                    <span>Apple (아이폰) 바로 설치하기</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Status Banner when user clicked install */}
+              {installStatus && (
+                <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-950 text-xs leading-relaxed space-y-1.5 animate-in fade-in duration-200">
+                  <div className="flex items-center gap-1.5 font-bold text-amber-900">
+                    <Sparkles className="w-4 h-4 text-amber-600" />
+                    <span>설치 진행 안내:</span>
+                  </div>
+                  <p className="font-medium leading-relaxed">{installStatus}</p>
+                </div>
+              )}
+
               <div className="p-4 rounded-2xl bg-gradient-to-br from-indigo-500/10 via-purple-500/5 to-pink-500/10 border border-indigo-100 flex items-start gap-3">
                 <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center shrink-0 shadow-sm">
                   <Download className="w-5 h-5" />
@@ -305,7 +380,7 @@ export const InstallAppModal: React.FC<InstallAppModalProps> = ({ isOpen, onClos
                       지금 바로 아래 버튼을 누르면 안드로이드 폰 홈 화면에 바로 설치됩니다!
                     </p>
                     <button
-                      onClick={handleAndroidInstallClick}
+                      onClick={handleDirectAndroidClick}
                       className="w-full py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-[0.99] text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/25 transition cursor-pointer"
                     >
                       <Download className="w-4 h-4" />

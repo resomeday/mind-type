@@ -9,7 +9,8 @@ import {
   Compass,
   HeartHandshake,
   Smartphone,
-  Download
+  Download,
+  Apple
 } from 'lucide-react';
 import { UserPersona } from '../types/personality';
 import { DimensionKey, DIMENSIONS_META } from '../data/detailedQuestions';
@@ -22,6 +23,7 @@ import {
   ELEMENT_INFO,
   DIMENSION_PALETTE
 } from '../data/personalityData';
+import { downloadAppleWebClipProfile, installAndroidDirect } from '../services/mobileInstallService';
 
 interface TestHomeViewProps {
   user: UserPersona;
@@ -46,6 +48,7 @@ export const TestHomeView: React.FC<TestHomeViewProps> = ({
   onNavigateFriends,
   onOpenInstallModal
 }) => {
+  const [installFeedback, setInstallFeedback] = React.useState<string | null>(null);
   const dimensionsList: DimensionKey[] = ['mbti', 'attachment', 'chronotype', 'stress', 'element', 'blood'];
 
   const getCurrentValueLabel = (key: DimensionKey) => {
@@ -269,38 +272,62 @@ export const TestHomeView: React.FC<TestHomeViewProps> = ({
       </div>
 
       {/* Mobile PWA App Install Banner */}
-      <div className="bg-gradient-to-r from-stone-900 via-stone-850 to-stone-900 rounded-3xl p-6 sm:p-7 text-white flex flex-col md:flex-row md:items-center justify-between gap-5 border border-stone-800 shadow-md">
-        <div className="flex items-start gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-white/10 border border-white/20 backdrop-blur-md flex items-center justify-center text-white shrink-0 shadow-inner">
-            <Smartphone className="w-6 h-6 text-amber-300" />
-          </div>
-          <div className="space-y-1">
-            <div className="flex items-center gap-2 text-xs font-semibold text-amber-300">
-              <span>스마트폰 홈 화면 설치</span>
-              <span className="text-white/40">·</span>
-              <span>앱스토어 다운로드 없이 1초 설치</span>
+      <div className="bg-gradient-to-r from-stone-900 via-stone-850 to-stone-900 rounded-3xl p-6 sm:p-7 text-white flex flex-col justify-between gap-5 border border-stone-800 shadow-md">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-5">
+          <div className="flex items-start gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-white/10 border border-white/20 backdrop-blur-md flex items-center justify-center text-white shrink-0 shadow-inner">
+              <Smartphone className="w-6 h-6 text-amber-300" />
             </div>
-            <h3 className="text-base sm:text-lg font-bold text-white tracking-tight">
-              핸드폰 홈 화면에 앱으로 추가하고 언제든 궁합을 확인해보세요
-            </h3>
-            <p className="text-xs text-stone-300 leading-relaxed max-w-xl">
-              브라우저 주소창 없이 전체 화면 앱으로 실행되며, 데이터 없이도 오프라인 캐시를 통해 빠르게 동작합니다. (iPhone/iPad 및 Android 모두 지원)
-            </p>
+            <div className="space-y-1">
+              <div className="flex items-center gap-2 text-xs font-semibold text-amber-300">
+                <span>스마트폰 홈 화면 설치</span>
+                <span className="text-white/40">·</span>
+                <span>원클릭 다이렉트 설치</span>
+              </div>
+              <h3 className="text-base sm:text-lg font-bold text-white tracking-tight">
+                핸드폰 기종에 맞는 버튼을 누르면 바로 설치됩니다
+              </h3>
+              <p className="text-xs text-stone-300 leading-relaxed max-w-xl">
+                브라우저 주소창 없이 전체 화면 앱으로 실행되며, 데이터 없이도 오프라인 캐시를 통해 빠르게 동작합니다.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={async () => {
+                const msg = await installAndroidDirect();
+                setInstallFeedback(msg);
+                setTimeout(() => setInstallFeedback(null), 5000);
+              }}
+              className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white rounded-xl text-xs font-bold transition-all cursor-pointer shadow-xs flex items-center gap-1.5"
+            >
+              <Smartphone className="w-3.5 h-3.5 text-white" />
+              <span>안드로이드 바로 설치</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                const msg = downloadAppleWebClipProfile();
+                setInstallFeedback(msg);
+                setTimeout(() => setInstallFeedback(null), 5000);
+              }}
+              className="px-4 py-2.5 bg-white text-stone-900 hover:bg-stone-100 active:scale-95 rounded-xl text-xs font-bold transition-all cursor-pointer shadow-xs flex items-center gap-1.5"
+            >
+              <Apple className="w-3.5 h-3.5 text-stone-900" />
+              <span>Apple (아이폰) 바로 설치</span>
+            </button>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
-          {onOpenInstallModal && (
-            <button
-              type="button"
-              onClick={onOpenInstallModal}
-              className="px-4 py-2.5 bg-white text-stone-900 hover:bg-stone-100 rounded-xl text-xs font-bold transition-all cursor-pointer shadow-xs active:scale-98 flex items-center gap-1.5"
-            >
-              <Download className="w-3.5 h-3.5 text-stone-900" />
-              <span>핸드폰에 앱 설치하기</span>
-            </button>
-          )}
-        </div>
+        {installFeedback && (
+          <div className="p-3.5 rounded-xl bg-amber-500/20 border border-amber-500/40 text-xs text-amber-200 leading-relaxed animate-in fade-in duration-200 flex items-start gap-2">
+            <Sparkles className="w-4 h-4 text-amber-300 shrink-0 mt-0.5" />
+            <span>{installFeedback}</span>
+          </div>
+        )}
       </div>
 
       {/* 4. Next Step Teaser: View Radar Chart & Best Matches */}
