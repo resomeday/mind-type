@@ -16,7 +16,10 @@ import {
   Compass,
   ArrowRight,
   Smile,
-  Crown
+  Crown,
+  Pencil,
+  X,
+  RotateCcw
 } from 'lucide-react';
 import {
   UserPersona,
@@ -44,7 +47,9 @@ interface FriendsDirectoryProps {
   user: UserPersona;
   friends: UserPersona[];
   onAddFriend: (friend: UserPersona) => void;
+  onUpdateFriend?: (friend: UserPersona) => void;
   onDeleteFriend: (id: string) => void;
+  onResetSampleFriends?: () => void;
   onSelectForCompat: (friend: UserPersona) => void;
   groupRooms: GroupRoom[];
   onCreateGroupRoom: (roomName: string) => GroupRoom;
@@ -57,7 +62,9 @@ export const FriendsDirectory: React.FC<FriendsDirectoryProps> = ({
   user,
   friends,
   onAddFriend,
+  onUpdateFriend,
   onDeleteFriend,
+  onResetSampleFriends,
   onSelectForCompat,
   groupRooms,
   onCreateGroupRoom,
@@ -147,6 +154,70 @@ export const FriendsDirectory: React.FC<FriendsDirectoryProps> = ({
         setSimulatorSelectedIds([...simulatorSelectedIds, id]);
       }
     }
+  };
+
+  // Editing friend name state
+  const [editingFriendId, setEditingFriendId] = useState<string | null>(null);
+  const [editingName, setEditingName] = useState<string>('');
+
+  // Delete friend modal confirmation state
+  const [friendToDelete, setFriendToDelete] = useState<UserPersona | null>(null);
+
+  // Toast notification feedback state
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => {
+      setToastMessage(prev => (prev === msg ? null : prev));
+    }, 2800);
+  };
+
+  const handleStartEditName = (friend: UserPersona) => {
+    setEditingFriendId(friend.id);
+    setEditingName(friend.name);
+  };
+
+  const handleCancelEditName = () => {
+    setEditingFriendId(null);
+    setEditingName('');
+  };
+
+  const handleSaveEditedName = (friend: UserPersona) => {
+    const trimmed = editingName.trim();
+    if (!trimmed) return;
+    if (trimmed === friend.name) {
+      setEditingFriendId(null);
+      return;
+    }
+
+    const updated: UserPersona = {
+      ...friend,
+      name: trimmed,
+      customTitle: generatePersonaTitle({
+        mbti: friend.mbti,
+        bloodType: friend.bloodType,
+        attachment: friend.attachment,
+        chronotype: friend.chronotype,
+        stress: friend.stress,
+        element: friend.element
+      })
+    };
+
+    if (onUpdateFriend) {
+      onUpdateFriend(updated);
+    }
+    setEditingFriendId(null);
+    setEditingName('');
+    showToast(`친구 이름이 '${trimmed}'(으)로 변경되었습니다.`);
+  };
+
+  const handleConfirmDelete = () => {
+    if (!friendToDelete) return;
+    const targetName = friendToDelete.name;
+    onDeleteFriend(friendToDelete.id);
+    setFriendToDelete(null);
+    showToast(`'${targetName}' 님이 친구 목록에서 삭제되었습니다.`);
   };
 
   // Group metrics
@@ -654,6 +725,7 @@ export const FriendsDirectory: React.FC<FriendsDirectoryProps> = ({
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {allPeople.map(person => {
               const isMe = person.id === user.id;
+              const isEditingThis = editingFriendId === person.id;
               const mbti = MBTI_INFO[person.mbti];
               const blood = BLOOD_INFO[person.bloodType];
               const attachment = ATTACHMENT_INFO[person.attachment];
@@ -667,16 +739,63 @@ export const FriendsDirectory: React.FC<FriendsDirectoryProps> = ({
                 >
                   <div>
                     <div className="flex items-start justify-between">
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <h3 className="text-base font-extrabold text-stone-900">{person.name}</h3>
-                          {isMe && (
-                            <span className="text-[10px] px-1.5 py-0.5 bg-stone-100 text-stone-700 font-bold rounded">
-                              나
-                            </span>
-                          )}
-                        </div>
-                        <div className="text-xs text-stone-500 mt-0.5">{person.customTitle}</div>
+                      <div className="w-full">
+                        {isEditingThis ? (
+                          <form
+                            onSubmit={(e) => {
+                              e.preventDefault();
+                              handleSaveEditedName(person);
+                            }}
+                            className="flex items-center gap-1.5 w-full mt-0.5"
+                          >
+                            <input
+                              type="text"
+                              required
+                              value={editingName}
+                              onChange={(e) => setEditingName(e.target.value)}
+                              className="flex-1 px-2.5 py-1 text-xs border border-stone-300 rounded-lg focus:outline-hidden focus:ring-1 focus:ring-stone-600 bg-white font-bold text-stone-900"
+                              placeholder="새 친구 이름"
+                              autoFocus
+                            />
+                            <button
+                              type="submit"
+                              className="px-2.5 py-1 bg-stone-900 hover:bg-stone-800 text-white text-xs font-semibold rounded-lg flex items-center gap-1 cursor-pointer transition-colors shadow-2xs"
+                              title="이름 저장"
+                            >
+                              <Check className="w-3 h-3 text-emerald-400" />
+                              <span>저장</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={handleCancelEditName}
+                              className="px-2 py-1 text-xs text-stone-500 hover:text-stone-800 rounded-lg cursor-pointer"
+                              title="취소"
+                            >
+                              취소
+                            </button>
+                          </form>
+                        ) : (
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <h3 className="text-base font-extrabold text-stone-900">{person.name}</h3>
+                              {isMe ? (
+                                <span className="text-[10px] px-1.5 py-0.5 bg-stone-100 text-stone-700 font-bold rounded">
+                                  나
+                                </span>
+                              ) : (
+                                <button
+                                  type="button"
+                                  onClick={() => handleStartEditName(person)}
+                                  className="p-1 text-stone-400 hover:text-stone-800 hover:bg-stone-100 rounded-md transition-colors cursor-pointer"
+                                  title="친구 이름 수정"
+                                >
+                                  <Pencil className="w-3.5 h-3.5" />
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                        <div className="text-xs text-stone-500 mt-1">{person.customTitle}</div>
                       </div>
                     </div>
 
@@ -716,21 +835,111 @@ export const FriendsDirectory: React.FC<FriendsDirectoryProps> = ({
                       <span className="text-xs text-stone-500 font-semibold">내 고유 프로필</span>
                     )}
 
-                    {!isMe && !person.id.startsWith('sample-') && (
-                      <button
-                        type="button"
-                        onClick={() => onDeleteFriend(person.id)}
-                        className="p-1.5 text-stone-400 hover:text-rose-600 rounded-md transition-colors"
-                        title="친구 삭제"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
+                    {!isMe && (
+                      <div className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={() => handleStartEditName(person)}
+                          className="p-1.5 text-stone-400 hover:text-stone-700 hover:bg-stone-100 rounded-lg transition-colors cursor-pointer"
+                          title="친구 이름 수정"
+                        >
+                          <Pencil className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setFriendToDelete(person)}
+                          className="p-1.5 text-stone-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                          title="친구 삭제"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
                     )}
                   </div>
                 </div>
               );
             })}
           </div>
+
+          {/* Empty state when no friends are registered */}
+          {friends.length === 0 && (
+            <div className="bg-white rounded-3xl p-8 border border-stone-200 text-center space-y-4 shadow-2xs mt-4">
+              <div className="w-12 h-12 rounded-2xl bg-stone-100 flex items-center justify-center text-stone-400 mx-auto">
+                <Users className="w-6 h-6" />
+              </div>
+              <div className="space-y-1">
+                <h4 className="text-base font-bold text-stone-900">등록된 친구가 없습니다</h4>
+                <p className="text-xs text-stone-500 max-w-sm mx-auto">
+                  친구에게 초대장을 보내거나 카드를 공유받아 친구를 등록하고 1:1 궁합을 확인해 보세요.
+                </p>
+              </div>
+              <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={onOpenInviteModal}
+                  className="px-4 py-2 bg-stone-900 text-white text-xs font-semibold rounded-xl hover:bg-stone-800 transition-colors shadow-2xs cursor-pointer flex items-center gap-1.5"
+                >
+                  <Send className="w-3.5 h-3.5" />
+                  <span>친구 초대장 생성</span>
+                </button>
+                {onResetSampleFriends && (
+                  <button
+                    type="button"
+                    onClick={onResetSampleFriends}
+                    className="px-4 py-2 bg-stone-100 text-stone-700 text-xs font-semibold rounded-xl hover:bg-stone-200 border border-stone-200 transition-colors cursor-pointer flex items-center gap-1.5"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5 text-stone-500" />
+                    <span>기본 샘플 친구 복원</span>
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Delete Friend Confirmation Modal */}
+      {friendToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl max-w-sm w-full p-6 border border-stone-200 shadow-2xl space-y-4">
+            <div className="w-12 h-12 rounded-2xl bg-rose-50 border border-rose-100 text-rose-600 flex items-center justify-center mx-auto">
+              <Trash2 className="w-6 h-6" />
+            </div>
+
+            <div className="text-center space-y-1.5">
+              <h3 className="text-base font-bold text-stone-900">
+                친구를 목록에서 삭제하시겠습니까?
+              </h3>
+              <p className="text-xs text-stone-600 leading-relaxed">
+                <strong>'{friendToDelete.name}'</strong> 님의 프로필이 친구 목록 및 참여 중인 모임 케미 룸에서 모두 삭제됩니다.
+              </p>
+            </div>
+
+            <div className="pt-2 flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setFriendToDelete(null)}
+                className="flex-1 py-2.5 px-3 rounded-xl border border-stone-200 text-stone-700 font-semibold text-xs hover:bg-stone-50 transition-colors cursor-pointer"
+              >
+                취소
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmDelete}
+                className="flex-1 py-2.5 px-3 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs shadow-xs transition-colors cursor-pointer"
+              >
+                삭제하기
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-stone-900 text-white text-xs font-semibold px-4 py-2.5 rounded-full shadow-lg flex items-center gap-2 animate-in fade-in slide-in-from-bottom-2 duration-200">
+          <Check className="w-4 h-4 text-emerald-400" />
+          <span>{toastMessage}</span>
         </div>
       )}
     </div>

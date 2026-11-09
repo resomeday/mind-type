@@ -155,8 +155,39 @@ export default function App() {
     setFriends(prev => [newFriend, ...prev.filter(f => f.id !== newFriend.id)]);
   };
 
+  const handleUpdateFriend = (updatedFriend: UserPersona) => {
+    setFriends(prev => prev.map(f => f.id === updatedFriend.id ? updatedFriend : f));
+    // Also update friend inside any group rooms they are members of
+    setGroupRooms(prev => prev.map(room => ({
+      ...room,
+      members: room.members.map(m => m.id === updatedFriend.id ? updatedFriend : m)
+    })));
+    // Also update partnerForCompat if selected
+    if (partnerForCompat?.id === updatedFriend.id) {
+      setPartnerForCompat(updatedFriend);
+    }
+  };
+
   const handleDeleteFriend = (id: string) => {
     setFriends(prev => prev.filter(f => f.id !== id));
+    // Also remove from all group rooms
+    setGroupRooms(prev => prev.map(room => ({
+      ...room,
+      members: room.members.filter(m => m.id !== id)
+    })));
+    // If the deleted friend was selected in compat view, pick another friend or sample
+    if (partnerForCompat?.id === id) {
+      const remaining = friends.filter(f => f.id !== id);
+      if (remaining.length > 0) {
+        setPartnerForCompat(remaining[0]);
+      } else {
+        setPartnerForCompat(SAMPLE_PROFILES[0]);
+      }
+    }
+  };
+
+  const handleResetSampleFriends = () => {
+    setFriends(SAMPLE_PROFILES);
   };
 
   const handleSelectPartnerForCompat = (partner: UserPersona) => {
@@ -337,7 +368,9 @@ export default function App() {
             user={user}
             friends={friends}
             onAddFriend={handleAddFriend}
+            onUpdateFriend={handleUpdateFriend}
             onDeleteFriend={handleDeleteFriend}
+            onResetSampleFriends={handleResetSampleFriends}
             onSelectForCompat={handleSelectPartnerForCompat}
             groupRooms={groupRooms}
             onCreateGroupRoom={handleCreateGroupRoom}
