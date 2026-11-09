@@ -14,6 +14,7 @@ import { AssessmentModal } from './components/AssessmentModal';
 import { DimensionTestModal } from './components/DimensionTestModal';
 import { ShareCardModal } from './components/ShareCardModal';
 import { InstallAppModal } from './components/InstallAppModal';
+import { MobileInstallPrompt } from './components/MobileInstallPrompt';
 import { ThemeSelectorModal } from './components/ThemeSelectorModal';
 import { InviteModal } from './components/InviteModal';
 import { ReceivedInviteModal } from './components/ReceivedInviteModal';
@@ -324,6 +325,7 @@ export default function App() {
             onNavigateMatches={() => setCurrentTab('matches')}
             onOpenInviteModal={() => setIsInviteModalOpen(true)}
             onNavigateFriends={() => setCurrentTab('friends')}
+            onOpenInstallModal={() => setIsInstallModalOpen(true)}
           />
         )}
 
@@ -445,6 +447,9 @@ export default function App() {
         isOpen={isInstallModalOpen}
         onClose={() => setIsInstallModalOpen(false)}
       />
+
+      {/* Floating In-App Mobile Install Prompt */}
+      <MobileInstallPrompt onOpenInstallModal={() => setIsInstallModalOpen(true)} />
 
       {/* Design Style Theme Selector Modal */}
       <ThemeSelectorModal

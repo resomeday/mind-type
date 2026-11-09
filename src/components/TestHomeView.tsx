@@ -7,7 +7,9 @@ import {
   Users,
   Send,
   Compass,
-  HeartHandshake
+  HeartHandshake,
+  Smartphone,
+  Download
 } from 'lucide-react';
 import { UserPersona } from '../types/personality';
 import { DimensionKey, DIMENSIONS_META } from '../data/detailedQuestions';
@@ -30,6 +32,7 @@ interface TestHomeViewProps {
   onNavigateMatches: () => void;
   onOpenInviteModal?: () => void;
   onNavigateFriends?: () => void;
+  onOpenInstallModal?: () => void;
 }
 
 export const TestHomeView: React.FC<TestHomeViewProps> = ({
@@ -40,7 +43,8 @@ export const TestHomeView: React.FC<TestHomeViewProps> = ({
   onNavigateProfile,
   onNavigateMatches,
   onOpenInviteModal,
-  onNavigateFriends
+  onNavigateFriends,
+  onOpenInstallModal
 }) => {
   const dimensionsList: DimensionKey[] = ['mbti', 'attachment', 'chronotype', 'stress', 'element', 'blood'];
 
@@ -261,6 +265,41 @@ export const TestHomeView: React.FC<TestHomeViewProps> = ({
               </div>
             );
           })}
+        </div>
+      </div>
+
+      {/* Mobile PWA App Install Banner */}
+      <div className="bg-gradient-to-r from-stone-900 via-stone-850 to-stone-900 rounded-3xl p-6 sm:p-7 text-white flex flex-col md:flex-row md:items-center justify-between gap-5 border border-stone-800 shadow-md">
+        <div className="flex items-start gap-4">
+          <div className="w-12 h-12 rounded-2xl bg-white/10 border border-white/20 backdrop-blur-md flex items-center justify-center text-white shrink-0 shadow-inner">
+            <Smartphone className="w-6 h-6 text-amber-300" />
+          </div>
+          <div className="space-y-1">
+            <div className="flex items-center gap-2 text-xs font-semibold text-amber-300">
+              <span>스마트폰 홈 화면 설치</span>
+              <span className="text-white/40">·</span>
+              <span>앱스토어 다운로드 없이 1초 설치</span>
+            </div>
+            <h3 className="text-base sm:text-lg font-bold text-white tracking-tight">
+              핸드폰 홈 화면에 앱으로 추가하고 언제든 궁합을 확인해보세요
+            </h3>
+            <p className="text-xs text-stone-300 leading-relaxed max-w-xl">
+              브라우저 주소창 없이 전체 화면 앱으로 실행되며, 데이터 없이도 오프라인 캐시를 통해 빠르게 동작합니다. (iPhone/iPad 및 Android 모두 지원)
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 shrink-0">
+          {onOpenInstallModal && (
+            <button
+              type="button"
+              onClick={onOpenInstallModal}
+              className="px-4 py-2.5 bg-white text-stone-900 hover:bg-stone-100 rounded-xl text-xs font-bold transition-all cursor-pointer shadow-xs active:scale-98 flex items-center gap-1.5"
+            >
+              <Download className="w-3.5 h-3.5 text-stone-900" />
+              <span>핸드폰에 앱 설치하기</span>
+            </button>
+          )}
         </div>
       </div>
 

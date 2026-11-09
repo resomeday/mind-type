@@ -59,6 +59,10 @@ export const InstallAppModal: React.FC<InstallAppModalProps> = ({ isOpen, onClos
     }
   };
 
+  const currentAppUrl = typeof window !== 'undefined' && window.location.origin.startsWith('http')
+    ? window.location.origin
+    : 'https://ais-pre-g5rc6dgojhiu7nte2qwhf7-633738735601.asia-east1.run.app';
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/70 backdrop-blur-sm animate-in fade-in duration-200">
       <div 
@@ -175,7 +179,7 @@ export const InstallAppModal: React.FC<InstallAppModalProps> = ({ isOpen, onClos
               <div className="p-4 rounded-2xl bg-indigo-50/70 border border-indigo-200/80 flex flex-col sm:flex-row items-center gap-4">
                 <div className="bg-white p-2 rounded-xl shadow-xs border border-indigo-100 shrink-0 flex flex-col items-center">
                   <img
-                    src="https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=https%3A%2F%2Fais-pre-g5rc6dgojhiu7nte2qwhf7-633738735601.asia-east1.run.app"
+                    src={`https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=${encodeURIComponent(currentAppUrl)}`}
                     alt="스마트폰 접속 QR 코드"
                     className="w-28 h-28 sm:w-32 sm:h-32 rounded-lg"
                     loading="lazy"
@@ -198,10 +202,10 @@ export const InstallAppModal: React.FC<InstallAppModalProps> = ({ isOpen, onClos
 
                   <div className="flex items-center gap-2 pt-1">
                     <div className="flex-1 bg-white px-2.5 py-1.5 rounded-lg border border-indigo-200 text-[11px] text-slate-700 font-mono truncate select-all">
-                      https://ais-pre-g5rc6dgojhiu7nte2qwhf7-633738735601.asia-east1.run.app
+                      {currentAppUrl}
                     </div>
                     <button
-                      onClick={() => handleCopy('https://ais-pre-g5rc6dgojhiu7nte2qwhf7-633738735601.asia-east1.run.app', 'mobile-url')}
+                      onClick={() => handleCopy(currentAppUrl, 'mobile-url')}
                       className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white text-xs font-semibold flex items-center gap-1 shrink-0 transition cursor-pointer shadow-xs"
                     >
                       {copiedCode === 'mobile-url' ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
