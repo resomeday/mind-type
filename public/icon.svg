@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bg-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4F46E5" />
+      <stop offset="50%" stop-color="#7C3AED" />
+      <stop offset="100%" stop-color="#EC4899" />
+    </linearGradient>
+    <linearGradient id="accent-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" />
+      <stop offset="100%" stop-color="#E0E7FF" />
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#0F172A" flood-opacity="0.25" />
+    </filter>
+  </defs>
+
+  <!-- Background rounded squircle with safe-zone -->
+  <rect width="512" height="512" rx="128" fill="url(#bg-grad)" />
+
+  <!-- Inner glowing aura -->
+  <circle cx="256" cy="256" r="160" fill="#FFFFFF" opacity="0.08" />
+
+  <!-- 6-Dimensional Constellation Hexagon Rings -->
+  <polygon points="256,128 360,188 360,308 256,368 152,308 152,188" 
+           fill="none" stroke="#FFFFFF" stroke-width="4" stroke-opacity="0.35" stroke-dasharray="6 6" />
+
+  <!-- Central Heart Symbol with Intersecting Human Bond Nodes -->
+  <g filter="url(#shadow)">
+    <!-- Connected Heart Path -->
+    <path d="M256,390 C256,390 148,310 148,220 C148,170 188,140 230,140 C246,140 256,150 256,150 C256,150 266,140 282,140 C324,140 364,170 364,220 C364,310 256,390 256,390 Z" 
+          fill="url(#accent-grad)" />
+
+    <!-- 6 Dimension Nodes on Hexagon Vertices -->
+    <!-- MBTI (Top) -->
+    <circle cx="256" cy="128" r="14" fill="#6366F1" stroke="#FFFFFF" stroke-width="4" />
+    <!-- Attachment (Top-Right) -->
+    <circle cx="360" cy="188" r="14" fill="#EC4899" stroke="#FFFFFF" stroke-width="4" />
+    <!-- Chronotype (Bottom-Right) -->
+    <circle cx="360" cy="308" r="14" fill="#F59E0B" stroke="#FFFFFF" stroke-width="4" />
+    <!-- Stress (Bottom) -->
+    <circle cx="256" cy="368" r="14" fill="#10B981" stroke="#FFFFFF" stroke-width="4" />
+    <!-- Temperament (Bottom-Left) -->
+    <circle cx="152" cy="308" r="14" fill="#06B6D4" stroke="#FFFFFF" stroke-width="4" />
+    <!-- Blood Type (Top-Left) -->
+    <circle cx="152" cy="188" r="14" fill="#8B5CF6" stroke="#FFFFFF" stroke-width="4" />
+
+    <!-- Central Core Node -->
+    <circle cx="256" cy="240" r="18" fill="#4F46E5" stroke="#FFFFFF" stroke-width="4" />
+    <path d="M252,234 L260,240 L252,246" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+  </g>
+
+  <!-- Title / Logo text badge at bottom center -->
+  <rect x="180" y="420" width="152" height="32" rx="16" fill="#0F172A" opacity="0.4" />
+  <text x="256" y="442" fill="#FFFFFF" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="16" font-weight="800" text-anchor="middle" letter-spacing="3">MIND:TYPE</text>
+</svg>

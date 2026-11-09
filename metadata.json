@@ -1,0 +1,6 @@
+{
+  "name": "MIND:TYPE - 다면 성격 & 최적의 인간관계 추천",
+  "description": "MBTI, 혈액형, 애착유형, 크로노타입, 스트레스 대처유형, 4대 기질을 입체 분석하여 최고의 연애·우정·협업 파트너를 추천하고 1:1 정밀 관계 진단서를 제공하는 성격 분석 플랫폼",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
