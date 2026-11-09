@@ -19,6 +19,7 @@ import {
   QrCode
 } from 'lucide-react';
 import { usePWAInstall } from '../hooks/usePWAInstall';
+import { DirectInstallGuideModal } from './DirectInstallGuideModal';
 
 import { 
   downloadAppleWebClipProfile, 
@@ -33,7 +34,7 @@ interface InstallAppModalProps {
 type TabKey = 'instant_pwa' | 'android_store' | 'apple_store';
 
 export const InstallAppModal: React.FC<InstallAppModalProps> = ({ isOpen, onClose }) => {
-  const { isInstallable, isInstalled, isIOS, isAndroid, platformName, triggerInstall } = usePWAInstall();
+  const { isInstallable, isInstalled, isIOS, isAndroid, isInAppBrowser, platformName, triggerInstall } = usePWAInstall();
   
   // Default tab based on user's device
   const [activeTab, setActiveTab] = useState<TabKey>('instant_pwa');
@@ -41,6 +42,7 @@ export const InstallAppModal: React.FC<InstallAppModalProps> = ({ isOpen, onClos
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const [installStatus, setInstallStatus] = useState<string | null>(null);
   const [activePlatformFeedback, setActivePlatformFeedback] = useState<'android' | 'apple' | null>(null);
+  const [directGuidePlatform, setDirectGuidePlatform] = useState<'ios' | 'android' | null>(null);
 
   if (!isOpen) return null;
 
@@ -56,14 +58,19 @@ export const InstallAppModal: React.FC<InstallAppModalProps> = ({ isOpen, onClos
 
   const handleDirectAndroidClick = async () => {
     setActivePlatformFeedback('android');
-    const msg = await installAndroidDirect(triggerInstall, currentAppUrl);
-    setInstallStatus(msg);
+    if (isInstallable) {
+      const outcome = await triggerInstall();
+      if (outcome === 'accepted') {
+        setInstallStatus('앱 설치가 수락되었습니다! 안드로이드 홈 화면을 확인해 주세요.');
+        return;
+      }
+    }
+    setDirectGuidePlatform('android');
   };
 
   const handleDirectAppleClick = () => {
     setActivePlatformFeedback('apple');
-    const msg = downloadAppleWebClipProfile(currentAppUrl);
-    setInstallStatus(msg);
+    setDirectGuidePlatform('ios');
   };
 
   return (
@@ -599,6 +606,15 @@ export const InstallAppModal: React.FC<InstallAppModalProps> = ({ isOpen, onClos
           </button>
         </div>
       </div>
+
+      {/* Direct Interactive Install Modal for 1-click Android/iOS guidance */}
+      <DirectInstallGuideModal
+        isOpen={!!directGuidePlatform}
+        onClose={() => setDirectGuidePlatform(null)}
+        targetPlatform={directGuidePlatform || 'ios'}
+        onTriggerAndroidInstall={triggerInstall}
+        isInAppBrowser={isInAppBrowser}
+      />
     </div>
   );
 };

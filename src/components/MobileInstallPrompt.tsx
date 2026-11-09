@@ -1,16 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { Smartphone, Download, X, Apple, Check } from 'lucide-react';
+import { Smartphone, Download, X, Apple, Check, Sparkles } from 'lucide-react';
 import { usePWAInstall } from '../hooks/usePWAInstall';
-import { downloadAppleWebClipProfile, installAndroidDirect } from '../services/mobileInstallService';
+import { DirectInstallGuideModal } from './DirectInstallGuideModal';
 
 interface MobileInstallPromptProps {
   onOpenInstallModal: () => void;
 }
 
 export const MobileInstallPrompt: React.FC<MobileInstallPromptProps> = ({ onOpenInstallModal }) => {
-  const { isInstalled, isInstallable, triggerInstall } = usePWAInstall();
+  const { isInstalled, isInstallable, isInAppBrowser, triggerInstall } = usePWAInstall();
   const [isDismissed, setIsDismissed] = useState(true);
   const [toastMsg, setToastMsg] = useState<string | null>(null);
+  const [activeGuidePlatform, setActiveGuidePlatform] = useState<'ios' | 'android' | null>(null);
 
   useEffect(() => {
     // Only show if not installed and not dismissed in current session
@@ -31,15 +32,19 @@ export const MobileInstallPrompt: React.FC<MobileInstallPromptProps> = ({ onOpen
   };
 
   const handleAndroid = async () => {
-    const msg = await installAndroidDirect(triggerInstall);
-    setToastMsg(msg);
-    setTimeout(() => setToastMsg(null), 4000);
+    if (isInstallable) {
+      const outcome = await triggerInstall();
+      if (outcome === 'accepted') {
+        setToastMsg('설치가 완료되었습니다! 홈 화면을 확인해 주세요.');
+        setTimeout(() => setToastMsg(null), 4000);
+        return;
+      }
+    }
+    setActiveGuidePlatform('android');
   };
 
   const handleApple = () => {
-    const msg = downloadAppleWebClipProfile();
-    setToastMsg(msg);
-    setTimeout(() => setToastMsg(null), 4500);
+    setActiveGuidePlatform('ios');
   };
 
   return (
@@ -99,6 +104,15 @@ export const MobileInstallPrompt: React.FC<MobileInstallPromptProps> = ({ onOpen
           </div>
         )}
       </div>
+
+      {/* Interactive Mobile Guide Modal */}
+      <DirectInstallGuideModal
+        isOpen={!!activeGuidePlatform}
+        onClose={() => setActiveGuidePlatform(null)}
+        targetPlatform={activeGuidePlatform || 'ios'}
+        onTriggerAndroidInstall={triggerInstall}
+        isInAppBrowser={isInAppBrowser}
+      />
     </div>
   );
 };

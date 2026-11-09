@@ -25,6 +25,7 @@ import { SAMPLE_PROFILES, generatePersonaTitle } from './data/personalityData';
 import { DimensionKey } from './data/detailedQuestions';
 import { DesignTheme, THEMES } from './types/theme';
 import { parseInviteFromUrl } from './services/inviteService';
+import { usePWAInstall } from './hooks/usePWAInstall';
 
 const DEFAULT_USER: UserPersona = {
   id: 'me-primary',
@@ -105,6 +106,10 @@ export default function App() {
   const [cardExchangeInitialTab, setCardExchangeInitialTab] = useState<'share' | 'request' | 'import'>('share');
   const [isMutualViewMode, setIsMutualViewMode] = useState<boolean>(false);
   const [receivedInvite, setReceivedInvite] = useState<InvitePayload | null>(null);
+  
+  // PWA & Mobile In-App Browser status
+  const { isInAppBrowser, openInExternalBrowser } = usePWAInstall();
+  const [inAppDismissed, setInAppDismissed] = useState<boolean>(false);
 
   // Parse invite from URL on mount
   useEffect(() => {
@@ -311,6 +316,35 @@ export default function App() {
         onOpenThemeModal={() => setIsThemeModalOpen(true)}
         userName={user.name}
       />
+
+      {/* In-App Browser Warning Banner for KakaoTalk / Naver App */}
+      {isInAppBrowser && !inAppDismissed && (
+        <div className="bg-gradient-to-r from-stone-900 via-rose-950 to-stone-900 text-white px-4 py-2.5 text-xs border-b border-rose-500/30 flex items-center justify-between gap-3 sticky top-16 z-20 shadow-md">
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="text-base shrink-0">📱</span>
+            <span className="truncate">
+              <strong>카카오톡/네이버</strong> 내부 브라우저는 홈 화면 앱 설치가 차단됩니다.
+            </span>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={openInExternalBrowser}
+              className="px-3 py-1 bg-white text-stone-900 rounded-lg text-xs font-bold hover:bg-stone-100 transition shadow-xs cursor-pointer active:scale-95"
+            >
+              Safari/Chrome으로 열기
+            </button>
+            <button
+              type="button"
+              onClick={() => setInAppDismissed(true)}
+              className="text-stone-400 hover:text-white p-1 text-xs cursor-pointer"
+              aria-label="닫기"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Main Content Area */}
       <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 pb-20">

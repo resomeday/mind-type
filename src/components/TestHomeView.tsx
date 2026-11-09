@@ -24,6 +24,8 @@ import {
   DIMENSION_PALETTE
 } from '../data/personalityData';
 import { downloadAppleWebClipProfile, installAndroidDirect } from '../services/mobileInstallService';
+import { usePWAInstall } from '../hooks/usePWAInstall';
+import { DirectInstallGuideModal } from './DirectInstallGuideModal';
 
 interface TestHomeViewProps {
   user: UserPersona;
@@ -48,6 +50,8 @@ export const TestHomeView: React.FC<TestHomeViewProps> = ({
   onNavigateFriends,
   onOpenInstallModal
 }) => {
+  const { isInstallable, isInstalled, isIOS, isAndroid, isInAppBrowser, triggerInstall } = usePWAInstall();
+  const [directGuidePlatform, setDirectGuidePlatform] = React.useState<'ios' | 'android' | null>(null);
   const [installFeedback, setInstallFeedback] = React.useState<string | null>(null);
   const dimensionsList: DimensionKey[] = ['mbti', 'attachment', 'chronotype', 'stress', 'element', 'blood'];
 
@@ -297,9 +301,14 @@ export const TestHomeView: React.FC<TestHomeViewProps> = ({
             <button
               type="button"
               onClick={async () => {
-                const msg = await installAndroidDirect();
-                setInstallFeedback(msg);
-                setTimeout(() => setInstallFeedback(null), 5000);
+                if (isInstallable) {
+                  const res = await triggerInstall();
+                  if (res === 'accepted') {
+                    setInstallFeedback('MIND:TYPE 앱 설치가 완료되었습니다! 홈 화면을 확인해 주세요.');
+                    return;
+                  }
+                }
+                setDirectGuidePlatform('android');
               }}
               className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white rounded-xl text-xs font-bold transition-all cursor-pointer shadow-xs flex items-center gap-1.5"
             >
@@ -310,9 +319,7 @@ export const TestHomeView: React.FC<TestHomeViewProps> = ({
             <button
               type="button"
               onClick={() => {
-                const msg = downloadAppleWebClipProfile();
-                setInstallFeedback(msg);
-                setTimeout(() => setInstallFeedback(null), 5000);
+                setDirectGuidePlatform('ios');
               }}
               className="px-4 py-2.5 bg-white text-stone-900 hover:bg-stone-100 active:scale-95 rounded-xl text-xs font-bold transition-all cursor-pointer shadow-xs flex items-center gap-1.5"
             >
@@ -329,6 +336,15 @@ export const TestHomeView: React.FC<TestHomeViewProps> = ({
           </div>
         )}
       </div>
+
+      {/* Direct Interactive Install Modal */}
+      <DirectInstallGuideModal
+        isOpen={!!directGuidePlatform}
+        onClose={() => setDirectGuidePlatform(null)}
+        targetPlatform={directGuidePlatform || 'ios'}
+        onTriggerAndroidInstall={triggerInstall}
+        isInAppBrowser={isInAppBrowser}
+      />
 
       {/* 4. Next Step Teaser: View Radar Chart & Best Matches */}
       <div className="bg-stone-100/70 rounded-3xl p-6 sm:p-7 border border-stone-200 flex flex-col sm:flex-row items-center justify-between gap-4">
